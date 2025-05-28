@@ -12,12 +12,22 @@ export interface RegisterAndLoginResponse {
 export const register = createAsyncThunk<
     RegisterAndLoginResponse,
     RegisterMutation,
-    { rejectValue: ValidationError}
+    { rejectValue: ValidationError }
 >(
     'users/register',
     async (registerForm, {rejectWithValue}) => {
         try {
-            const response = await axiosApi.post<RegisterAndLoginResponse>('/users', registerForm);
+            const formData = new FormData();
+            const keys = Object.keys(registerForm) as (keyof RegisterMutation)[];
+
+            keys.forEach(key => {
+                const value = registerForm[key] as string;
+                if (value !== null) {
+                    formData.append(key, value);
+                }
+            });
+
+            const response = await axiosApi.post<RegisterAndLoginResponse>('/users', formData)
             return response.data;
         } catch (error) {
             if (isAxiosError(error) && error.response && error.response.status === 400) {
@@ -32,7 +42,7 @@ export const register = createAsyncThunk<
 export const login = createAsyncThunk<
     User,
     LoginMutation,
-    { rejectValue: GlobalError}
+    { rejectValue: GlobalError }
 >(
     'users/login',
     async (loginForm, {rejectWithValue}) => {
@@ -52,7 +62,7 @@ export const login = createAsyncThunk<
 export const logout = createAsyncThunk<
     void,
     void,
-    {state: RootState}
+    { state: RootState }
 >(
     'users/logout',
     async (_, {getState}) => {
