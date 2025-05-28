@@ -1,11 +1,17 @@
 export interface RegisterMutation {
-    username: string;
+    email: string;
     password: string;
+    displayName: string;
+    image: string | null;
+
 }
 
 export interface User {
     _id: string;
-    username: string;
+    displayName: string;
+    role: string;
+    image: string | null;
+    email: string;
     token: string;
 }
 
@@ -22,10 +28,36 @@ export interface ValidationError {
 }
 
 export interface LoginMutation {
-    username: string;
+    email: string;
     password: string;
 }
 
 export interface GlobalError {
     error: string;
+}
+
+export interface CocktailMutation {
+    name: string;
+    image: string | null;
+    recipe: string;
+    ingredients:
+        {
+            title: string,
+            amount: string,
+        }[]
+}
+
+export interface ICocktail {
+    _id: string;
+    user: User;
+    name: string;
+    image: string;
+    isPublished: boolean;
+    recipe: string;
+    ingredients: [
+        {
+            title: string,
+            amount: string,
+        }
+    ]
 }
