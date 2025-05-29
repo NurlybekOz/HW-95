@@ -6,6 +6,7 @@ import {selectCocktails, selectCocktailsLoading} from "./cocktailSlice.ts";
 import {deleteCocktail, fetchAllCocktails, patchCocktail} from "./cocktailThunk.ts";
 import Spinner from "../../UI/Spinner/Spinner.tsx";
 import { Link } from "react-router-dom";
+import {apiUrl} from "../../../globalConstants.ts";
 
 
 const MyCocktails = () => {
@@ -46,8 +47,8 @@ const MyCocktails = () => {
                                         <CardMedia
                                             component="img"
                                             alt={cocktail.name}
-                                            height="140"
-                                            image={cocktail.image}
+                                            height="250"
+                                            image={apiUrl + '/' + cocktail.image}
                                         />
                                         <CardContent>
                                             <Button component={Link} to={'/cocktails/' + cocktail._id}>
