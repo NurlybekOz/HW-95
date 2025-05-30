@@ -1,19 +1,22 @@
 import express from "express";
 import {Error} from 'mongoose';
 import User from "../modules/User";
+import {imagesUpload} from "../middleware/multer";
 
 const usersRouter = express.Router();
 
-usersRouter.post('/', async (req, res, next) => {
+usersRouter.post('/', imagesUpload.single('image'), async (req, res, next) => {
     try {
         const user = new User({
-            username: req.body.username,
             password: req.body.password,
+            displayName: req.body.displayName,
+            email: req.body.email,
+            image: req.file ? 'images/' + req.file.filename : null,
         });
 
         user.generateToken();
         await user.save();
-        res.send({user, message: 'users registered successfully.'});
+        res.send({user, message: 'user registered successfully.'});
     } catch (error) {
         if (error instanceof Error.ValidationError) {
             res.status(400).send(error);
@@ -25,15 +28,15 @@ usersRouter.post('/', async (req, res, next) => {
 });
 
 usersRouter.post('/sessions', async (req, res) => {
-    if (!req.body.username || !req.body.password) {
-        res.status(400).send({error: 'Username and password must be in req'});
+    if (!req.body.email || !req.body.password) {
+        res.status(400).send({error: 'email and password must be in req'});
         return;
     }
 
-    const user = await User.findOne({username: req.body.username});
+    const user = await User.findOne({email: req.body.email});
 
     if (!user) {
-        res.status(404).send({error: "Username not found"});
+        res.status(404).send({error: "Email not found"});
         return;
     }
 
@@ -47,7 +50,7 @@ usersRouter.post('/sessions', async (req, res) => {
     user.generateToken();
     await user.save();
 
-    res.send({message: 'Username and password is correct', user});
+    res.send({message: 'Email and password is correct', user});
 });
 
 usersRouter.delete('/sessions', async (req, res, next) => {

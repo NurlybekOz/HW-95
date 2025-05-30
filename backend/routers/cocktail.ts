@@ -1,9 +1,10 @@
 import express from "express";
-import {Error} from 'mongoose';
+import {Error, Types} from 'mongoose';
 import Cocktail from "../modules/Cocktail";
 import User from "../modules/User";
 import {imagesUpload} from "../middleware/multer";
 import {Ingredients} from "../types";
+
 
 
 const cocktailRouter = express.Router();
@@ -13,7 +14,7 @@ cocktailRouter.get('/', async (req, res, next) => {
         const queryUser = req.query.user as string;
         let cocktails = await Cocktail.find().populate("user", "displayName email");
         if (queryUser) {
-            cocktails = cocktails.filter(cocktail => cocktail.user.toString() === queryUser);
+            cocktails = cocktails.filter(cocktail => new Types.ObjectId(cocktail.user).toString() === queryUser);
         }
         res.send(cocktails);
     } catch (e) {

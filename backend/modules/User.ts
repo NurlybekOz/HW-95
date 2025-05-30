@@ -7,13 +7,17 @@ interface UserMethods {
     checkPassword: (password: string) => Promise<boolean>;
     generateToken(): void;
 }
-
+interface UserVirtuals {
+    confirmPassword: string;
+}
 const ARGON2_OPTIONS = {
     type: argon2.argon2id,
     memoryCost: 2 ** 16,
     timeCost: 5,
     parallelism: 1,
 };
+
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
 type UserModel = Model<UserFields, {}, UserMethods>;
 
@@ -22,29 +26,49 @@ const UserSchema = new mongoose.Schema<
     HydratedDocument<UserFields>,
     UserModel,
     UserMethods,
-    {}
+    {},
+    UserVirtuals
 >({
-    username: {
+    email: {
         type: String,
         required: true,
         unique: true,
-        validate: {
-            validator: async function(value: string): Promise<boolean> {
-                if (!this.isModified('username')) return true;
-                const user: HydratedDocument<UserFields> | null = await User.findOne({username: value});
-                return !user;
+        validate: [
+            {
+                validator: async function(value: string): Promise<boolean> {
+                    return emailRegex.test(value);
+                },
+                message: "This email is invalid"
             },
-            message: "This is username is already taken"
-        }
+            {
+                validator: async function(value: string): Promise<boolean> {
+                    if (!this.isModified('email')) return true;
+                    const user: HydratedDocument<UserFields> | null = await User.findOne({email: value});
+                    return !user;
+                },
+                message: "This email is already taken"
+            }
+        ]
     },
     password: {
         type: String,
         required: true,
     },
+    role: {
+        type: String,
+        required: true,
+        default: 'user',
+        enum: ['user', 'admin'],
+    },
+    image: { type: String },
     token: {
         type: String,
         required: true,
-    }
+    },
+    displayName: {
+        type: String,
+        required: true,
+    },
 });
 
 UserSchema.methods.checkPassword = async function (password: string){
